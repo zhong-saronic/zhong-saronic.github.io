@@ -10,14 +10,20 @@ export const STATUS_LABEL: Record<Status, string> = {
   good: "Go",
 };
 
+export const STATUS_COLOR: Record<Status, string> = {
+  bad: "var(--status-bad)",
+  okay: "var(--status-okay)",
+  good: "var(--status-good)",
+};
+
 /**
- * Two zone boundaries, t1 <= t2.
- * higherWorse (wind, waves, precip): good <= t1 < caution <= t2 < no-go
- * lowerWorse (visibility):           no-go < t1 <= caution < t2 <= good
+ * Two zone boundaries, lower <= upper.
+ * higherWorse (wind, waves, precip): go <= lower < caution <= upper < no-go
+ * lowerWorse (visibility):           no-go < lower <= caution < upper <= go
  */
 export interface ThresholdPair {
-  t1: number;
-  t2: number;
+  lower: number;
+  upper: number;
 }
 
 export type Direction = "higherWorse" | "lowerWorse";
@@ -30,13 +36,13 @@ export interface Thresholds {
 }
 
 export const DEFAULT_THRESHOLDS: Thresholds = {
-  wind: { t1: 15, t2: 20 }, // kn
-  wave: { t1: 2, t2: 4 }, // ft
-  precip: { t1: 0, t2: 1 }, // mm — good only when bone dry
-  visibility: { t1: 2, t2: 5 }, // mi
+  wind: { lower: 15, upper: 20 }, // kn
+  wave: { lower: 2, upper: 4 }, // ft
+  precip: { lower: 0, upper: 1 }, // mm — good only when bone dry
+  visibility: { lower: 2, upper: 5 }, // mi
 };
 
-/** Slider ranges and labels for the threshold settings UI */
+/** Everything the UI and evaluator need to know about one condition */
 export interface ThresholdConfig {
   key: keyof Thresholds;
   label: string;
@@ -45,20 +51,21 @@ export interface ThresholdConfig {
   max: number;
   step: number;
   direction: Direction;
+  getValue: (w: HourPoint, m: MarinePoint) => number;
 }
 
 export const THRESHOLD_CONFIG: ThresholdConfig[] = [
-  { key: "wind", label: "Wind speed", unit: "kn", min: 0, max: 40, step: 1, direction: "higherWorse" },
-  { key: "wave", label: "Wave height", unit: "ft", min: 0, max: 10, step: 0.5, direction: "higherWorse" },
-  { key: "precip", label: "Precipitation", unit: "mm", min: 0, max: 5, step: 0.1, direction: "higherWorse" },
-  { key: "visibility", label: "Visibility", unit: "mi", min: 0, max: 15, step: 0.5, direction: "lowerWorse" },
+  { key: "wind", label: "Wind speed", unit: "kn", min: 0, max: 40, step: 1, direction: "higherWorse", getValue: (w) => w.windSpeed },
+  { key: "wave", label: "Wave height", unit: "ft", min: 0, max: 10, step: 0.5, direction: "higherWorse", getValue: (_w, m) => m.waveHeight },
+  { key: "precip", label: "Precipitation", unit: "mm", min: 0, max: 5, step: 0.1, direction: "higherWorse", getValue: (w) => w.precipitation },
+  { key: "visibility", label: "Visibility", unit: "mi", min: 0, max: 15, step: 0.5, direction: "lowerWorse", getValue: (w) => w.visibility },
 ];
 
-export function rateValue(value: number, pair: ThresholdPair, direction: Direction): Status {
+function rateValue(value: number, pair: ThresholdPair, direction: Direction): Status {
   if (direction === "higherWorse") {
-    return value > pair.t2 ? "bad" : value > pair.t1 ? "okay" : "good";
+    return value > pair.upper ? "bad" : value > pair.lower ? "okay" : "good";
   }
-  return value < pair.t1 ? "bad" : value < pair.t2 ? "okay" : "good";
+  return value < pair.lower ? "bad" : value < pair.upper ? "okay" : "good";
 }
 
 export interface ConditionCheck {
@@ -79,7 +86,7 @@ export interface StatusPoint {
 export function evaluateDemoStatus(
   weatherHours: HourPoint[],
   marineHours: MarinePoint[],
-  thresholds: Thresholds = DEFAULT_THRESHOLDS
+  thresholds: Thresholds
 ): StatusPoint[] {
   const n = Math.min(weatherHours.length, marineHours.length);
   const points: StatusPoint[] = [];
@@ -87,12 +94,16 @@ export function evaluateDemoStatus(
   for (let i = 0; i < n; i++) {
     const w = weatherHours[i];
     const m = marineHours[i];
-    const conditions: ConditionCheck[] = [
-      { label: "Wind", value: w.windSpeed, unit: "kn", status: rateValue(w.windSpeed, thresholds.wind, "higherWorse") },
-      { label: "Waves", value: m.waveHeight, unit: "ft", status: rateValue(m.waveHeight, thresholds.wave, "higherWorse") },
-      { label: "Precip", value: w.precipitation, unit: "mm", status: rateValue(w.precipitation, thresholds.precip, "higherWorse") },
-      { label: "Visibility", value: w.visibility, unit: "mi", status: rateValue(w.visibility, thresholds.visibility, "lowerWorse") },
-    ];
+
+    const conditions: ConditionCheck[] = THRESHOLD_CONFIG.map((cfg) => {
+      const value = cfg.getValue(w, m);
+      return {
+        label: cfg.label,
+        value,
+        unit: cfg.unit,
+        status: rateValue(value, thresholds[cfg.key], cfg.direction),
+      };
+    });
 
     const status: Status = conditions.some((c) => c.status === "bad")
       ? "bad"

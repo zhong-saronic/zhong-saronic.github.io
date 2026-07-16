@@ -17,7 +17,7 @@ function App() {
       </header>
 
       {weather.data && marine.data && (
-        <GoNoGoBar weatherHours={weather.data.hours} marineHours={marine.data.hours} />
+        <GoNoGoBar weatherHours={weather.data} marineHours={marine.data} />
       )}
 
       <WeatherSection state={weather} />

@@ -9,12 +9,6 @@ const API_URL =
   "&wind_speed_unit=kn&timezone=auto";
 
 interface OpenMeteoResponse {
-  timezone_abbreviation: string;
-  hourly_units: {
-    wind_speed_10m: string;
-    precipitation: string;
-    visibility: string;
-  };
   hourly: {
     time: string[];
     wind_speed_10m: number[];
@@ -34,12 +28,7 @@ export interface HourPoint {
   visibility: number;
 }
 
-export interface Forecast {
-  timezoneAbbreviation: string;
-  hours: HourPoint[];
-}
-
-export async function fetchForecast(): Promise<Forecast> {
+export async function fetchForecast(): Promise<HourPoint[]> {
   const res = await fetch(API_URL);
   if (!res.ok) {
     throw new Error(`Open-Meteo returned ${res.status} ${res.statusText}`);
@@ -48,29 +37,10 @@ export async function fetchForecast(): Promise<Forecast> {
 
   const { time, wind_speed_10m, precipitation, visibility } = data.hourly;
 
-  const hours: HourPoint[] = time.map((t, i) => ({
+  return time.map((t, i) => ({
     time: t,
     windSpeed: wind_speed_10m[i],
     precipitation: precipitation[i],
     visibility: Math.round((visibility[i] / METERS_PER_MILE) * 10) / 10,
   }));
-
-  return { timezoneAbbreviation: data.timezone_abbreviation, hours };
-}
-
-/** "2026-07-16T15:00" → "Thu 16" */
-export function formatDay(isoLocal: string): string {
-  const d = new Date(isoLocal);
-  return d.toLocaleDateString("en-US", { weekday: "short", day: "numeric" });
-}
-
-/** "2026-07-16T15:00" → "Thu, Jul 16, 3 PM" */
-export function formatHour(isoLocal: string): string {
-  const d = new Date(isoLocal);
-  return d.toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-  });
 }

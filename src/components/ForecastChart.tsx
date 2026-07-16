@@ -10,9 +10,20 @@ import {
   YAxis,
 } from "recharts";
 import type { DataKey } from "recharts";
-import { formatDay, formatHour } from "../weather";
+import { formatDay, formatHour, midnightTicks } from "../time";
 
-export interface Series<T> {
+/** Shared day-boundary x-axis styling, also used by the Go/No-Go bar */
+export const xAxisProps = (dayTicks: string[]) => ({
+  dataKey: "time",
+  ticks: dayTicks,
+  interval: 0 as const,
+  tickFormatter: formatDay,
+  tick: { fill: "var(--muted)", fontSize: 12 },
+  tickLine: false,
+  axisLine: { stroke: "var(--axis)" },
+});
+
+interface Series<T> {
   dataKey: DataKey<T>;
   label: string;
   /** CSS custom property for the series color, e.g. "var(--c-wind)" */
@@ -76,23 +87,10 @@ function ForecastChart<T extends { time: string }>({
   kind,
   height = 150,
 }: Props<T>) {
-  // One tick per day, at local midnight
-  const dayTicks = data
-    .filter((h) => h.time.endsWith("T00:00"))
-    .map((h) => h.time);
-
   const axes = (
     <>
       <CartesianGrid stroke="var(--grid)" strokeWidth={1} vertical={false} />
-      <XAxis
-        dataKey="time"
-        ticks={dayTicks}
-        interval={0}
-        tickFormatter={formatDay}
-        tick={{ fill: "var(--muted)", fontSize: 12 }}
-        tickLine={false}
-        axisLine={{ stroke: "var(--axis)" }}
-      />
+      <XAxis {...xAxisProps(midnightTicks(data))} />
       <YAxis
         width={40}
         tick={{ fill: "var(--muted)", fontSize: 12 }}

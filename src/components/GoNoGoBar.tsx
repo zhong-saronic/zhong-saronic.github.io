@@ -10,17 +10,19 @@ import {
 import { useState } from "react";
 import type { HourPoint } from "../weather";
 import type { MarinePoint } from "../marine";
-import { formatDay, formatHour } from "../weather";
+import { formatHour, midnightTicks } from "../time";
 import {
   DEFAULT_THRESHOLDS,
   evaluateDemoStatus,
+  STATUS_COLOR,
   STATUS_LABEL,
   THRESHOLD_CONFIG,
 } from "../demoStatus";
 import type { Status, StatusPoint, Thresholds } from "../demoStatus";
+import { xAxisProps } from "./ForecastChart";
 import ThresholdSlider from "./ThresholdSlider";
 
-const STORAGE_KEY = "demoThresholds.v1";
+const STORAGE_KEY = "demoThresholds.v2";
 
 function loadThresholds(): Thresholds {
   try {
@@ -32,9 +34,9 @@ function loadThresholds(): Thresholds {
       const pair = parsed[key];
       if (
         pair &&
-        typeof pair.t1 === "number" &&
-        typeof pair.t2 === "number" &&
-        pair.t1 <= pair.t2
+        typeof pair.lower === "number" &&
+        typeof pair.upper === "number" &&
+        pair.lower <= pair.upper
       ) {
         result[key] = pair;
       }
@@ -52,12 +54,6 @@ function saveThresholds(t: Thresholds) {
     // Private browsing or full storage — settings just won't persist
   }
 }
-
-const STATUS_COLOR: Record<Status, string> = {
-  good: "var(--status-good)",
-  okay: "var(--status-okay)",
-  bad: "var(--status-bad)",
-};
 
 interface Props {
   weatherHours: HourPoint[];
@@ -102,9 +98,6 @@ function GoNoGoBar({ weatherHours, marineHours }: Props) {
   };
 
   const points = evaluateDemoStatus(weatherHours, marineHours, thresholds);
-  const dayTicks = points
-    .filter((p) => p.time.endsWith("T00:00"))
-    .map((p) => p.time);
 
   return (
     <section className="card">
@@ -129,15 +122,7 @@ function GoNoGoBar({ weatherHours, marineHours }: Props) {
           margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
           barCategoryGap={0}
         >
-          <XAxis
-            dataKey="time"
-            ticks={dayTicks}
-            interval={0}
-            tickFormatter={formatDay}
-            tick={{ fill: "var(--muted)", fontSize: 12 }}
-            tickLine={false}
-            axisLine={{ stroke: "var(--axis)" }}
-          />
+          <XAxis {...xAxisProps(midnightTicks(points))} />
           {/* Hidden ticks but reserved width, so the plot area lines up with the charts below */}
           <YAxis width={40} domain={[0, 1]} tick={false} tickLine={false} axisLine={false} />
           <Tooltip
@@ -157,12 +142,7 @@ function GoNoGoBar({ weatherHours, marineHours }: Props) {
           {THRESHOLD_CONFIG.map((cfg) => (
             <ThresholdSlider
               key={cfg.key}
-              label={cfg.label}
-              unit={cfg.unit}
-              min={cfg.min}
-              max={cfg.max}
-              step={cfg.step}
-              direction={cfg.direction}
+              config={cfg}
               value={thresholds[cfg.key]}
               onChange={(pair) => updateThresholds({ ...thresholds, [cfg.key]: pair })}
             />
