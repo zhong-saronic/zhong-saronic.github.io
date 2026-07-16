@@ -1,17 +1,7 @@
-import { useState } from "react";
-import MarineTab from "./components/MarineTab";
-import WeatherTab from "./components/WeatherTab";
-
-type Tab = "weather" | "marine";
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: "weather", label: "Weather" },
-  { id: "marine", label: "Marine Conditions" },
-];
+import MarineSection from "./components/MarineSection";
+import WeatherSection from "./components/WeatherSection";
 
 function App() {
-  const [tab, setTab] = useState<Tab>("weather");
-
   return (
     <main className="page">
       <header className="page-header">
@@ -19,21 +9,8 @@ function App() {
         <p className="page-sub">7-day hourly forecast · 30.37°N, 89.09°W · local time</p>
       </header>
 
-      <nav className="tabs" role="tablist">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            role="tab"
-            aria-selected={tab === t.id}
-            className={tab === t.id ? "tab tab-active" : "tab"}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
-
-      {tab === "weather" ? <WeatherTab /> : <MarineTab />}
+      <WeatherSection />
+      <MarineSection />
 
       <footer className="page-footer">
         Data from{" "}

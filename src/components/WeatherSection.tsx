@@ -2,7 +2,7 @@ import ForecastChart from "./ForecastChart";
 import { fetchForecast } from "../weather";
 import { useAsyncData } from "../useAsyncData";
 
-function WeatherTab() {
+function WeatherSection() {
   const { data: forecast, error, retry } = useAsyncData(fetchForecast);
 
   if (error) {
@@ -24,28 +24,25 @@ function WeatherTab() {
         title="Wind speed"
         unit="kn"
         data={forecast.hours}
-        dataKey="windSpeed"
-        color="var(--c-wind)"
+        series={[{ dataKey: "windSpeed", label: "Wind speed", color: "var(--c-wind)" }]}
         kind="line"
       />
       <ForecastChart
         title="Precipitation"
         unit="mm"
         data={forecast.hours}
-        dataKey="precipitation"
-        color="var(--c-precip)"
+        series={[{ dataKey: "precipitation", label: "Precipitation", color: "var(--c-precip)" }]}
         kind="bar"
       />
       <ForecastChart
         title="Visibility"
         unit="mi"
         data={forecast.hours}
-        dataKey="visibility"
-        color="var(--c-vis)"
+        series={[{ dataKey: "visibility", label: "Visibility", color: "var(--c-vis)" }]}
         kind="line"
       />
     </>
   );
 }
 
-export default WeatherTab;
+export default WeatherSection;

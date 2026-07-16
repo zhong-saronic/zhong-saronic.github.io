@@ -72,35 +72,6 @@ body {
   font-size: 14px;
 }
 
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--grid);
-}
-
-.tab {
-  font: inherit;
-  font-size: 14px;
-  color: var(--ink-2);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 8px 12px;
-  margin-bottom: -1px;
-  cursor: pointer;
-}
-
-.tab:hover {
-  color: var(--ink);
-}
-
-.tab-active {
-  color: var(--ink);
-  font-weight: 600;
-  border-bottom-color: var(--c-precip);
-}
-
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -118,6 +89,29 @@ body {
   color: var(--muted);
   font-weight: 400;
   font-size: 13px;
+}
+
+/* Chart legend (multi-series only) */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: -4px 0 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.line-key {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
 }
 
 /* Chart tooltip */
@@ -138,6 +132,23 @@ body {
   font-weight: 400;
   color: var(--muted);
   font-size: 13px;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.chart-tooltip-row .line-key {
+  flex: none;
+  align-self: center;
+}
+
+.chart-tooltip-name {
+  font-size: 12px;
+  color: var(--ink-2);
 }
 
 .chart-tooltip-label {

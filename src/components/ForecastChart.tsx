@@ -12,29 +12,57 @@ import {
 import type { DataKey } from "recharts";
 import { formatDay, formatHour } from "../weather";
 
+export interface Series<T> {
+  dataKey: DataKey<T>;
+  label: string;
+  /** CSS custom property for the series color, e.g. "var(--c-wind)" */
+  color: string;
+}
+
 interface Props<T extends { time: string }> {
   title: string;
   unit: string;
   data: T[];
-  dataKey: DataKey<T>;
-  /** CSS custom property for the series color, e.g. "var(--c-wind)" */
-  color: string;
+  series: Series<T>[];
   kind: "line" | "bar";
+  height?: number;
 }
 
-interface TooltipPayload {
+interface TooltipEntry {
+  name?: string | number;
+  value?: number | string;
+  color?: string;
+}
+
+function ChartTooltip({
+  active,
+  label,
+  payload,
+  unit,
+}: {
   active?: boolean;
   label?: string | number;
-  payload?: { value: number }[];
-}
-
-function ChartTooltip({ active, label, payload, unit }: TooltipPayload & { unit: string }) {
+  payload?: TooltipEntry[];
+  unit: string;
+}) {
   if (!active || !payload?.length || label == null) return null;
   return (
     <div className="chart-tooltip">
-      <div className="chart-tooltip-value">
-        {payload[0].value} <span className="chart-tooltip-unit">{unit}</span>
-      </div>
+      {payload.length === 1 ? (
+        <div className="chart-tooltip-value">
+          {payload[0].value} <span className="chart-tooltip-unit">{unit}</span>
+        </div>
+      ) : (
+        payload.map((entry, i) => (
+          <div key={i} className="chart-tooltip-row">
+            <span className="line-key" style={{ background: entry.color }} />
+            <span className="chart-tooltip-value">
+              {entry.value} <span className="chart-tooltip-unit">{unit}</span>
+            </span>
+            <span className="chart-tooltip-name">{entry.name}</span>
+          </div>
+        ))
+      )}
       <div className="chart-tooltip-label">{formatHour(String(label))}</div>
     </div>
   );
@@ -44,9 +72,9 @@ function ForecastChart<T extends { time: string }>({
   title,
   unit,
   data,
-  dataKey,
-  color,
+  series,
   kind,
+  height = 150,
 }: Props<T>) {
   // One tick per day, at local midnight
   const dayTicks = data
@@ -89,26 +117,58 @@ function ForecastChart<T extends { time: string }>({
       <h2>
         {title} <span className="card-unit">{unit}</span>
       </h2>
-      <ResponsiveContainer width="100%" height={220}>
+      {series.length > 1 && (
+        <div className="chart-legend">
+          {series.map((s) => (
+            <span key={s.label} className="legend-item">
+              <span className="line-key" style={{ background: s.color }} />
+              {s.label}
+            </span>
+          ))}
+        </div>
+      )}
+      <ResponsiveContainer width="100%" height={height}>
         {kind === "line" ? (
-          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+          <LineChart
+            data={data}
+            syncId="forecast"
+            margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+          >
             {axes}
-            <Line
-              type="monotone"
-              dataKey={dataKey}
-              stroke={color}
-              strokeWidth={2}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              dot={false}
-              activeDot={{ r: 4, fill: color, stroke: "var(--surface)", strokeWidth: 2 }}
-              isAnimationActive={false}
-            />
+            {series.map((s) => (
+              <Line
+                key={s.label}
+                type="monotone"
+                name={s.label}
+                dataKey={s.dataKey}
+                stroke={s.color}
+                strokeWidth={2}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                dot={false}
+                activeDot={{ r: 4, fill: s.color, stroke: "var(--surface)", strokeWidth: 2 }}
+                isAnimationActive={false}
+              />
+            ))}
           </LineChart>
         ) : (
-          <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barCategoryGap={0}>
+          <BarChart
+            data={data}
+            syncId="forecast"
+            margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+            barCategoryGap={0}
+          >
             {axes}
-            <Bar dataKey={dataKey} fill={color} radius={[1, 1, 0, 0]} isAnimationActive={false} />
+            {series.map((s) => (
+              <Bar
+                key={s.label}
+                name={s.label}
+                dataKey={s.dataKey}
+                fill={s.color}
+                radius={[1, 1, 0, 0]}
+                isAnimationActive={false}
+              />
+            ))}
           </BarChart>
         )}
       </ResponsiveContainer>
