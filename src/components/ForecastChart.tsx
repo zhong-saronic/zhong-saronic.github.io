@@ -9,13 +9,14 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { DataKey } from "recharts";
 import { formatDay, formatHour } from "../weather";
 
 interface Props<T extends { time: string }> {
   title: string;
   unit: string;
   data: T[];
-  dataKey: keyof T & string;
+  dataKey: DataKey<T>;
   /** CSS custom property for the series color, e.g. "var(--c-wind)" */
   color: string;
   kind: "line" | "bar";
