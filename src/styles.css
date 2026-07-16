@@ -97,6 +97,122 @@ body {
   font-size: 13px;
 }
 
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ghost-btn {
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.ghost-btn:hover {
+  color: var(--ink);
+  border-color: var(--axis);
+}
+
+/* Threshold settings panel */
+.threshold-panel {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--grid);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.threshold-panel > .ghost-btn {
+  align-self: flex-end;
+}
+
+.threshold-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.threshold-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.threshold-zones {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dual-handle slider: two stacked native ranges over one zone-painted track */
+.dual-slider {
+  position: relative;
+  height: 20px;
+}
+
+.zone-track {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.dual-slider input[type="range"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none; /* only the thumbs are interactive */
+}
+
+.dual-slider input[type="range"]:focus-visible {
+  outline: 2px solid var(--c-precip);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.dual-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--ink-2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+}
+
+.dual-slider input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--ink-2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+}
+
 /* Chart legend (multi-series only) */
 .chart-legend {
   display: flex;

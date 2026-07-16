@@ -7,11 +7,51 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useState } from "react";
 import type { HourPoint } from "../weather";
 import type { MarinePoint } from "../marine";
 import { formatDay, formatHour } from "../weather";
-import { evaluateDemoStatus, STATUS_LABEL } from "../demoStatus";
-import type { Status, StatusPoint } from "../demoStatus";
+import {
+  DEFAULT_THRESHOLDS,
+  evaluateDemoStatus,
+  STATUS_LABEL,
+  THRESHOLD_CONFIG,
+} from "../demoStatus";
+import type { Status, StatusPoint, Thresholds } from "../demoStatus";
+import ThresholdSlider from "./ThresholdSlider";
+
+const STORAGE_KEY = "demoThresholds.v1";
+
+function loadThresholds(): Thresholds {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return DEFAULT_THRESHOLDS;
+    const parsed = JSON.parse(raw) as Partial<Thresholds>;
+    const result = { ...DEFAULT_THRESHOLDS };
+    for (const { key } of THRESHOLD_CONFIG) {
+      const pair = parsed[key];
+      if (
+        pair &&
+        typeof pair.t1 === "number" &&
+        typeof pair.t2 === "number" &&
+        pair.t1 <= pair.t2
+      ) {
+        result[key] = pair;
+      }
+    }
+    return result;
+  } catch {
+    return DEFAULT_THRESHOLDS;
+  }
+}
+
+function saveThresholds(t: Thresholds) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(t));
+  } catch {
+    // Private browsing or full storage — settings just won't persist
+  }
+}
 
 const STATUS_COLOR: Record<Status, string> = {
   good: "var(--status-good)",
@@ -53,14 +93,27 @@ function StatusTooltip({
 }
 
 function GoNoGoBar({ weatherHours, marineHours }: Props) {
-  const points = evaluateDemoStatus(weatherHours, marineHours);
+  const [thresholds, setThresholds] = useState<Thresholds>(loadThresholds);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const updateThresholds = (next: Thresholds) => {
+    setThresholds(next);
+    saveThresholds(next);
+  };
+
+  const points = evaluateDemoStatus(weatherHours, marineHours, thresholds);
   const dayTicks = points
     .filter((p) => p.time.endsWith("T00:00"))
     .map((p) => p.time);
 
   return (
     <section className="card">
-      <h2>Demo Go / No-Go</h2>
+      <div className="card-head">
+        <h2>Demo Go / No-Go</h2>
+        <button className="ghost-btn" onClick={() => setShowSettings(!showSettings)}>
+          {showSettings ? "Done" : "⚙ Thresholds"}
+        </button>
+      </div>
       <div className="chart-legend">
         {(["good", "okay", "bad"] as Status[]).map((s) => (
           <span key={s} className="legend-item">
@@ -99,6 +152,26 @@ function GoNoGoBar({ weatherHours, marineHours }: Props) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      {showSettings && (
+        <div className="threshold-panel">
+          {THRESHOLD_CONFIG.map((cfg) => (
+            <ThresholdSlider
+              key={cfg.key}
+              label={cfg.label}
+              unit={cfg.unit}
+              min={cfg.min}
+              max={cfg.max}
+              step={cfg.step}
+              direction={cfg.direction}
+              value={thresholds[cfg.key]}
+              onChange={(pair) => updateThresholds({ ...thresholds, [cfg.key]: pair })}
+            />
+          ))}
+          <button className="ghost-btn" onClick={() => updateThresholds(DEFAULT_THRESHOLDS)}>
+            Reset to defaults
+          </button>
+        </div>
+      )}
     </section>
   );
 }
