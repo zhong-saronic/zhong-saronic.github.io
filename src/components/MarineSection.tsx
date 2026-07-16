@@ -1,9 +1,9 @@
 import ForecastChart from "./ForecastChart";
-import { fetchMarineForecast } from "../marine";
-import { useAsyncData } from "../useAsyncData";
+import type { MarineForecast } from "../marine";
+import type { AsyncState } from "../useAsyncData";
 
-function MarineSection() {
-  const { data: forecast, error, retry } = useAsyncData(fetchMarineForecast);
+function MarineSection({ state }: { state: AsyncState<MarineForecast> }) {
+  const { data: forecast, error, retry } = state;
 
   if (error) {
     return (

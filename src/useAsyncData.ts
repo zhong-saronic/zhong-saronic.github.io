@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 
-/** Fetch-on-mount with error + retry, shared by both dashboard tabs */
-export function useAsyncData<T>(loader: () => Promise<T>) {
+export interface AsyncState<T> {
+  data: T | null;
+  error: string | null;
+  retry: () => void;
+}
+
+/** Fetch-on-mount with error + retry, shared by both data sources */
+export function useAsyncData<T>(loader: () => Promise<T>): AsyncState<T> {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
 

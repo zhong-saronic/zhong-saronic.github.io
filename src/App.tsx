@@ -1,7 +1,14 @@
+import GoNoGoBar from "./components/GoNoGoBar";
 import MarineSection from "./components/MarineSection";
 import WeatherSection from "./components/WeatherSection";
+import { fetchForecast } from "./weather";
+import { fetchMarineForecast } from "./marine";
+import { useAsyncData } from "./useAsyncData";
 
 function App() {
+  const weather = useAsyncData(fetchForecast);
+  const marine = useAsyncData(fetchMarineForecast);
+
   return (
     <main className="page">
       <header className="page-header">
@@ -9,8 +16,12 @@ function App() {
         <p className="page-sub">7-day hourly forecast · 30.37°N, 89.09°W · local time</p>
       </header>
 
-      <WeatherSection />
-      <MarineSection />
+      {weather.data && marine.data && (
+        <GoNoGoBar weatherHours={weather.data.hours} marineHours={marine.data.hours} />
+      )}
+
+      <WeatherSection state={weather} />
+      <MarineSection state={marine} />
 
       <footer className="page-footer">
         Data from{" "}

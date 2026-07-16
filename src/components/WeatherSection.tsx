@@ -1,9 +1,9 @@
 import ForecastChart from "./ForecastChart";
-import { fetchForecast } from "../weather";
-import { useAsyncData } from "../useAsyncData";
+import type { Forecast } from "../weather";
+import type { AsyncState } from "../useAsyncData";
 
-function WeatherSection() {
-  const { data: forecast, error, retry } = useAsyncData(fetchForecast);
+function WeatherSection({ state }: { state: AsyncState<Forecast> }) {
+  const { data: forecast, error, retry } = state;
 
   if (error) {
     return (

@@ -20,6 +20,12 @@
   --c-wave: var(--c-precip);
   --c-wind-wave: var(--c-wind);
   --c-swell: var(--c-vis);
+
+  /* Go/No-Go status colors — fixed traffic-light palette, same in both themes,
+     deliberately distinct from the series colors above */
+  --status-good: #0ca30c;
+  --status-okay: #fab219;
+  --status-bad: #d03b3b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -112,6 +118,28 @@ body {
   width: 14px;
   height: 3px;
   border-radius: 2px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.status-dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.chart-tooltip-row .status-dot {
+  margin-right: 0;
+  align-self: center;
 }
 
 /* Chart tooltip */
