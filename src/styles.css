@@ -1,0 +1,190 @@
+/* Design tokens — light mode */
+:root {
+  color-scheme: light dark;
+
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+
+  /* Series colors (validated: light mode, all pairs) */
+  --c-wind: #eb6834;
+  --c-precip: #2a78d6;
+  --c-vis: #008300;
+
+  /* Marine tab reuses the validated triple: wave=blue, wind wave=orange, swell=green */
+  --c-wave: var(--c-precip);
+  --c-wind-wave: var(--c-wind);
+  --c-swell: var(--c-vis);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+
+    /* Series colors (validated: dark mode, all pairs) */
+    --c-wind: #d95926;
+    --c-precip: #3987e5;
+    --c-vis: #008300;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+}
+
+.page-sub {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--grid);
+}
+
+.tab {
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink-2);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab-active {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--c-precip);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card-unit {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* Chart tooltip */
+.chart-tooltip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.chart-tooltip-value {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.chart-tooltip-unit {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.chart-tooltip-label {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+/* Loading / error states */
+.notice-muted {
+  color: var(--muted);
+  text-align: center;
+  padding: 48px 0;
+}
+
+.notice {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.notice p {
+  margin: 0 0 12px;
+}
+
+.notice button {
+  font: inherit;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.notice button:hover {
+  border-color: var(--axis);
+}
+
+.page-footer {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.page-footer a {
+  color: inherit;
+}
